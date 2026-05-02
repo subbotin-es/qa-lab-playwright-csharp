@@ -9,6 +9,9 @@
     <IsTestProject>true</IsTestProject>
     <!-- Emit compiler warnings as errors — no silent bad code -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Disable CA analyzers — newer SDK versions (8.0.200+) add rules like CA1515
+         that flag public types in test assemblies; irrelevant for a test-only project -->
+    <AnalysisMode>None</AnalysisMode>
   </PropertyGroup>
 
   <ItemGroup>

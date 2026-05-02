@@ -62,16 +62,18 @@ jobs:
         if: always()
         with:
           name: NUnit Results
-          path: 'TestResults/*.trx'
+          path: '**/TestResults/**/*.trx'
           reporter: dotnet-trx
+          fail-on-error: false   # report errors as annotations, not a blocking failure
 
       # ── Generate a standalone HTML report from TRX (deployed to Pages) ────
       - name: Generate HTML report
         if: always()
+        continue-on-error: true
         run: |
           dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.10
           reportgenerator \
-            "-reports:TestResults/*.trx" \
+            "-reports:**/TestResults/**/*.trx" \
             "-targetdir:TestResults/report" \
             "-reporttypes:HtmlInline_AzurePipelines"
 
@@ -82,6 +84,7 @@ jobs:
         with:
           name: test-report
           path: TestResults/report/
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Upload TRX results
@@ -89,7 +92,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trx-results
-          path: TestResults/*.trx
+          path: '**/TestResults/**/*.trx'
+          if-no-files-found: warn
           retention-days: 14
 
       # ── Deploy report to GitHub Pages (main branch only) ──────────────────
