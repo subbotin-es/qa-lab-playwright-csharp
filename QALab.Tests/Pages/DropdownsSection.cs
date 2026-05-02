@@ -19,6 +19,11 @@ public class DropdownsSection
         await SingleDropdown.SelectOptionAsync(new SelectOptionValue { Value = value });
     }
 
+    public async Task SelectByLabelAsync(string label)
+    {
+        await SingleDropdown.SelectOptionAsync(new SelectOptionValue { Label = label });
+    }
+
     public async Task<string> GetSelectedValueAsync()
     {
         return await SingleDropdown.InputValueAsync();
@@ -27,6 +32,11 @@ public class DropdownsSection
     public async Task SelectMultipleByValueAsync(params string[] values)
     {
         await MultiDropdown.SelectOptionAsync(values);
+    }
+
+    public async Task SelectMultipleByLabelAsync(params string[] labels)
+    {
+        await MultiDropdown.SelectOptionAsync(labels.Select(l => new SelectOptionValue { Label = l }).ToArray());
     }
 
     public async Task ScrollIntoViewAsync()

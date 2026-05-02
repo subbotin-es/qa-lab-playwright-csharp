@@ -6,11 +6,11 @@ public class InputsSection
 {
     private readonly IPage _page;
 
-    private ILocator TextInput   => _page.Locator("#inputs input[type='text']");
-    private ILocator NumberInput => _page.Locator("#inputs input[type='number']");
-    private ILocator DateInput   => _page.Locator("#inputs input[type='date']");
-    private ILocator SearchInput => _page.Locator("#inputs input[type='search']");
-    private ILocator UrlInput    => _page.Locator("#inputs input[type='url']");
+    public ILocator TextInput   => _page.Locator("#inputs input[type='text']");
+    public ILocator NumberInput => _page.Locator("#inputs input[type='number']");
+    public ILocator DateInput   => _page.Locator("#inputs input[type='date']");
+    public ILocator SearchInput => _page.Locator("#inputs input[type='search']");
+    public ILocator UrlInput    => _page.Locator("#inputs input[type='url']");
 
     public InputsSection(IPage page)
     {

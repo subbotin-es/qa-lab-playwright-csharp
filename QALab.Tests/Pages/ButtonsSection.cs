@@ -6,9 +6,9 @@ public class ButtonsSection
 {
     private readonly IPage _page;
 
-    private ILocator PrimaryButton  => _page.Locator("#buttons").GetByRole(AriaRole.Button, new() { Name = "Primary Button",  Exact = true });
-    private ILocator DangerButton   => _page.Locator("#buttons").GetByRole(AriaRole.Button, new() { Name = "Danger Button",   Exact = true });
-    public  ILocator DisabledButton => _page.Locator("#buttons").GetByRole(AriaRole.Button, new() { Name = "Disabled Button", Exact = true });
+    public ILocator PrimaryButton  => _page.Locator("#buttons").GetByRole(AriaRole.Button, new() { Name = "Primary Button",  Exact = true });
+    public ILocator DangerButton   => _page.Locator("#buttons").GetByRole(AriaRole.Button, new() { Name = "Danger Button",   Exact = true });
+    public ILocator DisabledButton => _page.Locator("#buttons").GetByRole(AriaRole.Button, new() { Name = "Disabled Button", Exact = true });
 
     public ButtonsSection(IPage page)
     {
