@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+*.user
+playwright-report/
+test-results/
+**/*.trx
+.DS_Store
+*.suo
+.idea/
+.claude/
