@@ -1,0 +1,103 @@
+name: QA Lab — Playwright C# Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 7 * * 1'   # Monday 07:00 UTC — ready before your standup
+  workflow_dispatch:        # manual run / rerun from Actions tab
+
+jobs:
+  test:
+    name: Run Playwright C# Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write   # required by peaceiris/actions-gh-pages
+      checks: write     # required by dorny/test-reporter
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build — zero warnings
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Install Playwright browsers
+        run: pwsh QALab.Tests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+
+      # ── Smoke tests run on every push / PR ───────────────────────────────
+      - name: Run smoke tests
+        run: |
+          dotnet test --no-build --configuration Release \
+            --filter "Category=smoke" \
+            --settings QALab.Tests/.runsettings \
+            --logger "trx;LogFileName=smoke-results.trx" \
+            --results-dir TestResults
+        env:
+          BASE_URL: https://subbotin.es
+
+      # ── Full regression only when landing on main ─────────────────────────
+      - name: Run full regression
+        if: github.ref == 'refs/heads/main' && success()
+        run: |
+          dotnet test --no-build --configuration Release \
+            --settings QALab.Tests/.runsettings \
+            --logger "trx;LogFileName=full-results.trx" \
+            --results-dir TestResults
+        env:
+          BASE_URL: https://subbotin.es
+
+      # ── Inline test-results panel in the Actions/PR check run ─────────────
+      - name: Test results summary
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: NUnit Results
+          path: 'TestResults/*.trx'
+          reporter: dotnet-trx
+
+      # ── Generate a standalone HTML report from TRX (deployed to Pages) ────
+      - name: Generate HTML report
+        if: always()
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.10
+          reportgenerator \
+            "-reports:TestResults/*.trx" \
+            "-targetdir:TestResults/report" \
+            "-reporttypes:HtmlInline_AzurePipelines"
+
+      # ── Artifacts ─────────────────────────────────────────────────────────
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: TestResults/report/
+          retention-days: 30
+
+      - name: Upload TRX results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trx-results
+          path: TestResults/*.trx
+          retention-days: 14
+
+      # ── Deploy report to GitHub Pages (main branch only) ──────────────────
+      - name: Deploy report to GitHub Pages
+        if: github.ref == 'refs/heads/main' && always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./TestResults/report
+          destination_dir: report
+          allow_empty_commit: true
