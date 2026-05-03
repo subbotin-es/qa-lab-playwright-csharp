@@ -38,11 +38,13 @@ public class FormsTests : PlaywrightFixture
 
     [Test]
     [Category("regression")]
-    [Description("Empty submit should trigger browser validation on the first required field")]
+    [Description("Empty submit triggers custom JS validation and shows error message in feedback element")]
     public async Task EmptyFormSubmit_ShouldTriggerValidation()
     {
         await _forms.SubmitAsync();
-        await Expect(Page.Locator("input[placeholder='Full Name']")).ToBeFocusedAsync();
+        // Form uses novalidate + custom JS — errors appear in #reg-feedback with class 'error'
+        await Expect(Page.Locator("#reg-feedback")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("error"));
+        await Expect(Page.Locator("#reg-feedback")).ToContainTextAsync("Name must be at least 2 characters");
     }
 
     [TestCase("John Doe",   "john@example.com",  30, "+1234567890")]

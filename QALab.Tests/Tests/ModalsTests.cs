@@ -46,7 +46,7 @@ public class ModalsTests : PlaywrightFixture
 
     [Test]
     [Category("regression")]
-    [Description("Clicking confirm closes the modal after confirming the action")]
+    [Description("Clicking the X close button dismisses the modal (modal-confirm has no handler on the live page)")]
     public async Task ConfirmModal_ShouldHideModal()
     {
         await _modals.OpenAsync();
