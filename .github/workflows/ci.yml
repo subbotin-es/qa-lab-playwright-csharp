@@ -12,9 +12,7 @@ on:
 jobs:
   test:
     name: Run Playwright C# Tests
-    # ubuntu-22.04 — pinned for Playwright --with-deps compatibility
-    # (ubuntu-24.04 renames packages like libasound2→libasound2t64 which breaks older Playwright installs)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: write   # required by peaceiris/actions-gh-pages
@@ -33,8 +31,12 @@ jobs:
       - name: Build — zero warnings
         run: dotnet build --no-restore --configuration Release
 
+      # npx installs the same browser binary that Microsoft.Playwright.NUnit 1.59.0 expects,
+      # at the same default path (~/.cache/ms-playwright).
+      # Avoids the pwsh+playwright.ps1 approach which breaks on Linux when the bundled
+      # Node.js binary lacks execute permissions after NuGet extraction.
       - name: Install Playwright browsers
-        run: pwsh QALab.Tests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+        run: npx -y playwright@1.59.0 install --with-deps chromium
 
       # ── Smoke tests run on every push / PR ───────────────────────────────
       - name: Run smoke tests
@@ -62,10 +64,10 @@ jobs:
       - name: Test results summary
         uses: dorny/test-reporter@v1
         if: always()
-        continue-on-error: true   # dorny exits 1 even on "no files found"; don't cascade
+        continue-on-error: true
         with:
           name: NUnit Results
-          path: '**/TestResults/**/*.trx'
+          path: 'TestResults/*.trx'
           reporter: dotnet-trx
           fail-on-error: false
 
@@ -76,7 +78,7 @@ jobs:
         run: |
           dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.10
           reportgenerator \
-            "-reports:**/TestResults/**/*.trx" \
+            "-reports:TestResults/*.trx" \
             "-targetdir:TestResults/report" \
             "-reporttypes:HtmlInline_AzurePipelines"
 
@@ -95,7 +97,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trx-results
-          path: '**/TestResults/**/*.trx'
+          path: TestResults/*.trx
           if-no-files-found: warn
           retention-days: 14
 
