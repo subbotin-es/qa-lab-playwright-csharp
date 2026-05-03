@@ -12,7 +12,9 @@ on:
 jobs:
   test:
     name: Run Playwright C# Tests
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 — pinned for Playwright --with-deps compatibility
+    # (ubuntu-24.04 renames packages like libasound2→libasound2t64 which breaks older Playwright installs)
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     permissions:
       contents: write   # required by peaceiris/actions-gh-pages
@@ -60,11 +62,12 @@ jobs:
       - name: Test results summary
         uses: dorny/test-reporter@v1
         if: always()
+        continue-on-error: true   # dorny exits 1 even on "no files found"; don't cascade
         with:
           name: NUnit Results
           path: '**/TestResults/**/*.trx'
           reporter: dotnet-trx
-          fail-on-error: false   # report errors as annotations, not a blocking failure
+          fail-on-error: false
 
       # ── Generate a standalone HTML report from TRX (deployed to Pages) ────
       - name: Generate HTML report

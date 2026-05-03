@@ -13,8 +13,8 @@ End-to-end test framework targeting the [QA Lab live demo](https://subbotin.es/Q
 | Layer | Technology | Version |
 |---|---|---|
 | Test framework | NUnit | 3.14 |
-| Browser automation | Microsoft.Playwright | 1.51 |
-| NUnit adapter | Microsoft.Playwright.NUnit | 1.51 |
+| Browser automation | Microsoft.Playwright | 1.59 |
+| NUnit adapter | Microsoft.Playwright.NUnit | 1.59 |
 | Reporting | dorny/test-reporter + ReportGenerator HTML | — |
 | Language | C# 12 / .NET 8 LTS | net8.0 |
 | CI/CD | GitHub Actions | ubuntu-latest |
