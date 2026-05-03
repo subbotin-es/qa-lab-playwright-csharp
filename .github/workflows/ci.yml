@@ -21,6 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # global.json pins the SDK to 8.0.x so the system .NET 10 (pre-installed on
+      # ubuntu-latest) is never used. Both .NET 8.0.420 and .NET 10 pass --results-dir
+      # as a raw MSBuild switch, which MSBuild.dll rejects as unknown; removing that
+      # flag below is the real fix — global.json is belt-and-suspenders for SDK version.
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -32,20 +36,22 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       # npx installs the same browser binary that Microsoft.Playwright.NUnit 1.59.0 expects,
-      # at the same default path (~/.cache/ms-playwright).
-      # Avoids the pwsh+playwright.ps1 approach which breaks on Linux when the bundled
-      # Node.js binary lacks execute permissions after NuGet extraction.
+      # at the same default path (~/.cache/ms-playwright). Avoids pwsh+playwright.ps1
+      # which fails on Linux when the bundled Node.js binary lacks execute permissions.
       - name: Install Playwright browsers
         run: npx -y playwright@1.59.0 install --with-deps chromium
 
       # ── Smoke tests run on every push / PR ───────────────────────────────
+      # NOTE: --results-dir is intentionally omitted.
+      # In .NET SDK 8.0.400+, dotnet test passes --results-dir as a raw MSBuild switch
+      # which MSBuild.dll rejects with MSB1001 "Unknown switch". Without --results-dir
+      # the TRX lands at TestResults/{GUID}/smoke-results.trx; the glob below finds it.
       - name: Run smoke tests
         run: |
           dotnet test --no-build --configuration Release \
             --filter "Category=smoke" \
             --settings QALab.Tests/.runsettings \
-            --logger "trx;LogFileName=smoke-results.trx" \
-            --results-dir TestResults
+            --logger "trx;LogFileName=smoke-results.trx"
         env:
           BASE_URL: https://subbotin.es
 
@@ -55,8 +61,7 @@ jobs:
         run: |
           dotnet test --no-build --configuration Release \
             --settings QALab.Tests/.runsettings \
-            --logger "trx;LogFileName=full-results.trx" \
-            --results-dir TestResults
+            --logger "trx;LogFileName=full-results.trx"
         env:
           BASE_URL: https://subbotin.es
 
@@ -67,7 +72,7 @@ jobs:
         continue-on-error: true
         with:
           name: NUnit Results
-          path: 'TestResults/*.trx'
+          path: '**/TestResults/**/*.trx'
           reporter: dotnet-trx
           fail-on-error: false
 
@@ -78,7 +83,7 @@ jobs:
         run: |
           dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.10
           reportgenerator \
-            "-reports:TestResults/*.trx" \
+            "-reports:**/TestResults/**/*.trx" \
             "-targetdir:TestResults/report" \
             "-reporttypes:HtmlInline_AzurePipelines"
 
@@ -97,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trx-results
-          path: TestResults/*.trx
+          path: '**/TestResults/**/*.trx'
           if-no-files-found: warn
           retention-days: 14
 
