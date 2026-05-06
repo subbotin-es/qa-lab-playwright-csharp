@@ -121,10 +121,10 @@ Same target ([qa-lab.html](https://subbotin.es/QA-Lab/qa-lab.html)), five stacks
 | # | Stack | Repo |
 |---|---|---|
 | 1 | Playwright + TypeScript | coming soon |
-| 2 | **Pytest + Python** ← this | [qa-lab-pytest-python](https://github.com/subbotin-es/qa-lab-pytest-python) |
+| 2 | Pytest + Python + Allure | [qa-lab-pytest-python](https://github.com/subbotin-es/qa-lab-pytest-python) |
 | 3 | Selenium + Java + TestNG | [qa-lab-selenium-java](https://github.com/subbotin-es/qa-lab-selenium-java)
 | 4 | Cypress + JavaScript | coming soon |
-| 5 | Playwright + C# + NUnit <- This repo| [qa-lab-playwright-csharp](https://github.com/subbotin-es/qa-lab-playwright-csharp) 
+| 5 | **Playwright + C# + NUnit** <- This repo| [qa-lab-playwright-csharp](https://github.com/subbotin-es/qa-lab-playwright-csharp) 
 
 ---
 
