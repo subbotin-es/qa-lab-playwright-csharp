@@ -118,13 +118,13 @@ Same Playwright engine, different language ecosystem:
 
 Same target ([qa-lab.html](https://subbotin.es/QA-Lab/qa-lab.html)), five stacks — comparative analysis:
 
-| Stack | Repo |
-|---|---|
-| Stack 1: Playwright + TypeScript | *(coming soon)* |
-| Stack 2: Pytest + Python | *(coming soon)* |
-| Stack 3: Selenium + Java + TestNG | [qa-lab-selenium-java](https://github.com/subbotin-es/qa-lab-selenium-java) |
-| Stack 4: Cypress + JavaScript | *(coming soon)* |
-| **Stack 5: Playwright + C# ← this repo** | [qa-lab-playwright-csharp](https://github.com/subbotin-es/qa-lab-playwright-csharp) |
+| # | Stack | Repo |
+|---|---|---|
+| 1 | Playwright + TypeScript | coming soon |
+| 2 | **Pytest + Python** ← this | [qa-lab-pytest-python](https://github.com/subbotin-es/qa-lab-pytest-python) |
+| 3 | Selenium + Java + TestNG | [qa-lab-selenium-java](https://github.com/subbotin-es/qa-lab-selenium-java)
+| 4 | Cypress + JavaScript | coming soon |
+| 5 | Playwright + C# + NUnit <- This repo| [qa-lab-playwright-csharp](https://github.com/subbotin-es/qa-lab-playwright-csharp) 
 
 ---
 
