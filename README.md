@@ -15,6 +15,7 @@ End-to-end test framework targeting the [QA Lab live demo](https://subbotin.es/Q
 | Test framework | NUnit | 3.14 |
 | Browser automation | Microsoft.Playwright | 1.59 |
 | NUnit adapter | Microsoft.Playwright.NUnit | 1.59 |
+| **Load testing** | **NBomber** | **6.4** |
 | Reporting | dorny/test-reporter + ReportGenerator HTML | — |
 | Language | C# 12 / .NET 8 LTS | net8.0 |
 | CI/CD | GitHub Actions | ubuntu-latest |
@@ -65,6 +66,57 @@ dotnet test --configuration Release --settings QALab.Tests/.runsettings
 
 ---
 
+## Performance Testing (NBomber)
+
+SLO compliance load tests live in [`performance/QALab.Performance/`](performance/QALab.Performance/) — a standalone .NET 8 console project, independent of NUnit.
+
+### Run locally
+
+```bash
+# Smoke — 5 virtual users, 30 s, SLO assertions
+dotnet run --project performance/QALab.Performance -- smoke
+
+# Baseline — 10 virtual users, 60 s, alternating URLs
+dotnet run --project performance/QALab.Performance -- baseline
+
+# Cold/Warm — single user, 10 iterations, CDN cache comparison (observational)
+dotnet run --project performance/QALab.Performance -- cold-warm
+
+# Reports written to performance-results/ (HTML + Md)
+```
+
+### SLO thresholds
+
+| Metric | Threshold |
+|---|---|
+| p95 response time | ≤ 500 ms |
+| p99 response time | ≤ 1 000 ms |
+| Error rate | < 1 % |
+
+### Results (measured May 2026, S3 + CloudFront CDN)
+
+| Scenario | VUs | Requests | RPS | p50 | p95 | p99 | Errors |
+|---|---|---|---|---|---|---|---|
+| Smoke | 5 | 3 020 | 101 | 40 ms | 47 ms | 77 ms | 0 % |
+| Baseline | 10 | 11 544 | 192 | 44 ms | 55 ms | 81 ms | 0 % |
+| Cold/Warm | 1 | 10 iter | — | 44 ms | 441 ms* | 441 ms* | 0 % |
+
+\* Cold/Warm p95 reflects the first CDN cache miss in a 10-iteration run — expected, not a regression. See [`Findings.md`](Findings.md).
+
+All SLOs pass with significant margin. Full analysis: [`Findings.md`](Findings.md).
+
+### Why NBomber for a .NET team
+
+> "NBomber is niche — it barely appears in JDs. But the principle is more valuable on a CV than the tool name. A .NET team picks a .NET load tool. NBomber is that tool: same IDE, same debugger, same NuGet workflow, C# scenarios reviewable in the same PR as production code."
+
+**Useful links:**
+- [NBomber documentation](https://nbomber.com/docs/getting-started/overview)
+- [NBomber GitHub](https://github.com/PragmaticFlow/NBomber)
+- [NBomber.Http NuGet](https://www.nuget.org/packages/NBomber.Http)
+- [NBomber assertions & thresholds](https://nbomber.com/docs/nbomber/asserts_and_thresholds)
+
+---
+
 ## CI Pipeline
 
 Two-stage run on every push and pull request, with a **`workflow_dispatch`** trigger for manual reruns:
@@ -73,6 +125,8 @@ Two-stage run on every push and pull request, with a **`workflow_dispatch`** tri
 |---|---|---|
 | Smoke | all pushes + PRs | `--filter "Category=smoke"` |
 | Full regression | `main` branch only | all tests |
+| **NBomber smoke** | **all pushes + PRs** | **SLO assertions, 5 VU** |
+| **NBomber baseline** | **`main` branch only** | **SLO assertions, 10 VU** |
 
 **Reports generated on every run:**
 - **Inline check run** — [dorny/test-reporter](https://github.com/dorny/test-reporter) shows pass/fail table directly in the GitHub Actions panel and PR checks
