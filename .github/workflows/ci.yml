@@ -115,3 +115,47 @@ jobs:
           publish_dir: ./TestResults/report
           destination_dir: report
           allow_empty_commit: true
+
+  performance:
+    name: NBomber SLO Check
+    runs-on: ubuntu-latest
+    needs: test          # run after NUnit tests pass
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore performance project
+        run: dotnet restore performance/QALab.Performance/QALab.Performance.csproj
+
+      - name: Build performance project
+        run: |
+          dotnet build performance/QALab.Performance/QALab.Performance.csproj \
+            --no-restore --configuration Release
+
+      - name: Run NBomber smoke scenario
+        run: |
+          dotnet run --project performance/QALab.Performance \
+            --configuration Release -- smoke
+        env:
+          BASE_URL: https://subbotin.es
+
+      - name: Run NBomber baseline scenario (main only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          dotnet run --project performance/QALab.Performance \
+            --configuration Release -- baseline
+        env:
+          BASE_URL: https://subbotin.es
+
+      - name: Upload NBomber reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nbomber-reports
+          path: performance-results/
+          retention-days: 14
